@@ -11,7 +11,8 @@ const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const tradespersonRoutes = require('./routes/tradespeople');
 const customerRoutes = require('./routes/customers');
-const { isAuthenticated, isTradesperson } = require('./middleware/auth');
+const adminRoutes = require('./routes/admin');
+const { isAuthenticated, isTradesperson, isAdmin } = require('./middleware/auth');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/tradespeople', tradespersonRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve Tradesperson Cooperative Web Portal (Vite build) at /portal if present
 const portalDist = path.join(__dirname, '..', 'web-portal', 'dist');
@@ -75,6 +77,34 @@ if (fs.existsSync(portalDist)) {
   console.log('✓ Tradesperson web portal mounted at /portal');
 } else {
   console.log('ℹ Tradesperson web portal not built (missing web-portal/dist).');
+}
+
+// Serve Admin Web Portal at /admin if present
+const adminDist = path.join(__dirname, '..', 'admin-portal', 'dist');
+if (fs.existsSync(adminDist)) {
+  // Static assets
+  app.use('/admin', express.static(adminDist, { maxAge: '7d', index: false }));
+
+  // HTML entry – gate to authenticated admins only
+  app.get(['/admin', '/admin/*'], (req, res, next) => {
+    const acceptsHtml = req.accepts(['html', 'json']) === 'html';
+    if (!acceptsHtml) return next();
+
+    return isAuthenticated(req, res, () =>
+      isAdmin(req, res, () => {
+        const indexFile = path.join(adminDist, 'index.html');
+        if (fs.existsSync(indexFile)) {
+          res.sendFile(indexFile);
+        } else {
+          next();
+        }
+      })
+    );
+  });
+
+  console.log('✓ Admin web portal mounted at /admin');
+} else {
+  console.log('ℹ Admin web portal not built (missing admin-portal/dist).');
 }
 
 // Health check
