@@ -8,6 +8,7 @@ import Contributions from './components/Contributions';
 import Profile from './components/Profile';
 import { api, type BackendUser } from './api';
 import Login from './components/Login';
+import Register from './components/Register';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
@@ -15,6 +16,7 @@ const App: React.FC = () => {
   const [authed, setAuthed] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
 
   const mapUser = (u: BackendUser): User => {
     const name = `${u.firstName || ''} ${u.lastName || ''}`.trim();
@@ -30,6 +32,7 @@ const App: React.FC = () => {
       email: u.email,
       phone: u.phone || '',
       address,
+      rating: u.rating,
     };
   };
 
@@ -51,6 +54,23 @@ const App: React.FC = () => {
       setRole(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+      setAuthed(false);
+      setUser(null);
+      setRole(null);
+      setShowRegister(false);
+    } catch (e) {
+      console.error('Logout failed:', e);
+      // Still log out locally even if API call fails
+      setAuthed(false);
+      setUser(null);
+      setRole(null);
+      setShowRegister(false);
     }
   };
 
@@ -87,7 +107,10 @@ const App: React.FC = () => {
   }
 
   if (!authed) {
-    return <Login onSuccess={refreshAuth} />;
+    if (showRegister) {
+      return <Register onSuccess={refreshAuth} onBackToLogin={() => setShowRegister(false)} />;
+    }
+    return <Login onSuccess={refreshAuth} onSignUp={() => setShowRegister(true)} />;
   }
 
   if (role !== 'tradesperson') {
@@ -106,7 +129,12 @@ const App: React.FC = () => {
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
       <div className="flex-1 flex flex-col overflow-hidden">
         {user && (
-          <Header user={user} activeView={activeView} onProfileClick={() => setActiveView('profile')} />
+          <Header 
+            user={user} 
+            activeView={activeView} 
+            onProfileClick={() => setActiveView('profile')} 
+            onLogout={handleLogout}
+          />
         )}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-coop-gray-light p-4 md:p-8">
           {renderView()}

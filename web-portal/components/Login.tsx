@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api';
 
-const Login: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
+const Login: React.FC<{ onSuccess: () => void; onSignUp: () => void }> = ({ onSuccess, onSignUp }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,14 @@ const Login: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
         >
           {loading ? 'Signing in…' : 'Sign In'}
         </button>
-        <p className="text-xs text-coop-gray-dark mt-3">Use your existing ZAPP credentials.</p>
+        <button
+          type="button"
+          onClick={onSignUp}
+          className="w-full mt-3 text-coop-blue text-sm py-2 hover:underline"
+        >
+          New to the cooperative? Sign Up
+        </button>
+        <p className="text-xs text-coop-gray-dark mt-3 text-center">Use your ZAPP tradesperson credentials.</p>
       </form>
     </div>
   );

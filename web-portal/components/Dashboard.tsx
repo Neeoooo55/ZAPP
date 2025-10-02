@@ -38,7 +38,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     return () => { mounted = false; };
   }, []);
 
-  const { monthlyEarnings, completedCount, acceptanceRate } = useMemo(() => {
+  const { monthlyEarnings, completedCount, acceptanceRate, averageRating } = useMemo(() => {
     const completed = jobs.filter(j => j.status === 'completed');
     const now = new Date();
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -53,12 +53,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const declined = jobs.filter(j => j.status === 'declined').length;
     const accRate = (accepted + declined) > 0 ? Math.round((accepted / (accepted + declined)) * 100) : null;
 
+    // Get rating from user profile
+    const rating = user.rating?.average
+      ? user.rating.totalReviews > 0
+        ? user.rating.average.toFixed(1)
+        : 'New'
+      : '—';
+
     return {
       monthlyEarnings: `$${totalRecent.toFixed(0)}`,
       completedCount: String(completed.length),
       acceptanceRate: accRate !== null ? `${accRate}%` : 'N/A',
+      averageRating: rating,
     };
-  }, [jobs]);
+  }, [jobs, user.rating]);
 
   const recentActivity = useMemo(() => {
     const recent = [...jobs]
@@ -80,7 +88,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Monthly Earnings" value={monthlyEarnings} change="" changeType="increase" />
         <StatCard title="Jobs Completed" value={completedCount} change="" changeType="increase" />
-        <StatCard title="Average Rating" value={(/* could derive from backend user later */ '—')} change="" changeType="decrease" />
+        <StatCard title="Average Rating" value={averageRating} change="" changeType="increase" />
         <StatCard title="Acceptance Rate" value={acceptanceRate} change="" changeType="increase" />
       </div>
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">

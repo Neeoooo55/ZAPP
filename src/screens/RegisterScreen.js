@@ -11,25 +11,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
-import { useTradespeople } from '../context/TradespeopleContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import colors from '../styles/colors';
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useAuth();
-  const { registerTradesperson } = useTradespeople();
-  const [userType, setUserType] = useState('customer');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     password: '',
-    trade: '', // For tradespeople
-    businessName: '', // Optional business name
   });
   const [loading, setLoading] = useState(false);
 
@@ -38,15 +32,10 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   const handleRegister = async () => {
-    const { firstName, lastName, email, phone, password, trade, businessName } = formData;
+    const { firstName, lastName, email, phone, password } = formData;
 
     if (!firstName || !lastName || !email || !phone || !password) {
       Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (userType === 'tradesperson' && !trade) {
-      Alert.alert('Error', 'Please select your trade/service type');
       return;
     }
 
@@ -57,22 +46,15 @@ const RegisterScreen = ({ navigation }) => {
 
     setLoading(true);
     
-    // Build API data with role-specific fields
+    // Build API data for customer registration
     const apiData = {
       firstName,
       lastName,
       email,
       phone,
       password,
-      role: userType, // Backend expects 'role', not 'userType'
+      role: 'customer',
     };
-
-    // Add tradesperson-specific fields if registering as tradesperson
-    if (userType === 'tradesperson') {
-      apiData.trades = [trade];
-      apiData.businessName = businessName || `${firstName} ${lastName}`;
-      apiData.licenseNumber = ''; // Optional, can be added to form later
-    }
     
     const result = await register(apiData);
     setLoading(false);
@@ -91,59 +73,17 @@ const RegisterScreen = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons name="construct" size={48} color={colors.primary} />
+              <Ionicons name="person" size={48} color={colors.primary} />
             </View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join ZAPP today</Text>
+            <Text style={styles.title}>Create Customer Account</Text>
+            <Text style={styles.subtitle}>Book local tradespeople instantly</Text>
           </View>
 
-          <View style={styles.userTypeContainer}>
-            <Text style={styles.label}>I am a:</Text>
-            <View style={styles.userTypeButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.userTypeButton,
-                  userType === 'customer' && styles.userTypeButtonActive,
-                ]}
-                onPress={() => setUserType('customer')}
-              >
-                <Ionicons
-                  name="person"
-                  size={24}
-                  color={userType === 'customer' ? colors.white : colors.primary}
-                />
-                <Text
-                  style={[
-                    styles.userTypeText,
-                    userType === 'customer' && styles.userTypeTextActive,
-                  ]}
-                >
-                  Customer
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.userTypeButton,
-                  userType === 'tradesperson' && styles.userTypeButtonActive,
-                ]}
-                onPress={() => setUserType('tradesperson')}
-              >
-                <Ionicons
-                  name="hammer"
-                  size={24}
-                  color={userType === 'tradesperson' ? colors.white : colors.primary}
-                />
-                <Text
-                  style={[
-                    styles.userTypeText,
-                    userType === 'tradesperson' && styles.userTypeTextActive,
-                  ]}
-                >
-                  Tradesperson
-                </Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.infoBox}>
+            <Ionicons name="information-circle" size={20} color={colors.info} />
+            <Text style={styles.infoText}>
+              Are you a tradesperson? Sign up on our web portal to join the cooperative.
+            </Text>
           </View>
 
           <View style={styles.form}>
@@ -188,36 +128,6 @@ const RegisterScreen = ({ navigation }) => {
               placeholder="Create a password (min 6 characters)"
               secureTextEntry
             />
-
-            {/* Tradesperson-specific fields */}
-            {userType === 'tradesperson' && (
-              <>
-                <View style={styles.pickerContainer}>
-                  <Text style={styles.label}>Primary Trade/Service *</Text>
-                  <View style={styles.picker}>
-                    <Picker
-                      selectedValue={formData.trade}
-                      onValueChange={(value) => updateFormData('trade', value)}
-                    >
-                      <Picker.Item label="Select your trade" value="" />
-                      <Picker.Item label="Plumbing" value="plumbing" />
-                      <Picker.Item label="Electrical" value="electrical" />
-                      <Picker.Item label="HVAC" value="hvac" />
-                      <Picker.Item label="Carpentry" value="carpentry" />
-                      <Picker.Item label="Painting" value="painting" />
-                      <Picker.Item label="General Repairs" value="general" />
-                    </Picker>
-                  </View>
-                </View>
-
-                <Input
-                  label="Business Name (Optional)"
-                  value={formData.businessName}
-                  onChangeText={(value) => updateFormData('businessName', value)}
-                  placeholder="Your business name"
-                />
-              </>
-            )}
 
             <Button
               title="Sign Up"
@@ -284,9 +194,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textLight,
   },
-  
-  userTypeContainer: {
+
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.info + '15',
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.info + '30',
+  },
+
+  infoText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.info,
+    lineHeight: 20,
   },
   
   label: {
@@ -294,40 +219,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     marginBottom: 12,
-  },
-  
-  userTypeButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  
-  userTypeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: colors.white,
-    gap: 8,
-  },
-  
-  userTypeButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  
-  userTypeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  
-  userTypeTextActive: {
-    color: colors.white,
   },
   
   form: {

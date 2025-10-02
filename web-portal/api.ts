@@ -45,6 +45,13 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     }).then(json),
+  register: (userData: Record<string, unknown>) =>
+    fetch(`${base}/auth/register`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    }).then(json),
   logout: () => fetch(`${base}/auth/logout`, { method: 'POST', credentials: 'include' }).then(json),
   me: () => fetch(`${base}/auth/me`, { credentials: 'include' }).then(json),
 
