@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['customer', 'tradesperson'],
+    enum: ['customer', 'tradesperson', 'admin'],
     required: true,
   },
   // Customer-specific fields
@@ -104,4 +104,3 @@ userSchema.methods.toJSON = function() {
 };
 
 module.exports = mongoose.model('User', userSchema);
-

@@ -31,3 +31,13 @@ exports.isTradesperson = (req, res, next) => {
   });
 };
 
+// Middleware to check if user is an admin
+exports.isAdmin = (req, res, next) => {
+  if (req.session && req.session.userRole === 'admin') {
+    return next();
+  }
+  return res.status(403).json({ 
+    success: false, 
+    message: 'Admin access required' 
+  });
+};

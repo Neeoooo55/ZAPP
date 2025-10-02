@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const tradespersonRoutes = require('./routes/tradespeople');
 const customerRoutes = require('./routes/customers');
+const adminRoutes = require('./routes/admin');
 const { isAuthenticated, isTradesperson } = require('./middleware/auth');
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/tradespeople', tradespersonRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve Tradesperson Cooperative Web Portal (Vite build) at /portal if present
 const portalDist = path.join(__dirname, '..', 'web-portal', 'dist');
