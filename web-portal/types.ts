@@ -32,6 +32,10 @@ export interface User {
   email: string;
   phone: string;
   address: string;
+  rating?: {
+    average?: number;
+    totalReviews?: number;
+  };
 }
 
 export type ViewType = 'dashboard' | 'governance' | 'benefits' | 'community' | 'resources' | 'contributions' | 'profile';

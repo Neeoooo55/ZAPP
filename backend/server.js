@@ -58,22 +58,18 @@ if (fs.existsSync(portalDist)) {
   // Static assets (JS/CSS/images)
   app.use('/portal', express.static(portalDist, { maxAge: '7d', index: false }));
 
-  // HTML entry – gate to authenticated tradespeople only
+  // HTML entry – serve the React app, which will handle its own auth
   app.get(['/portal', '/portal/*'], (req, res, next) => {
     // Only intercept HTML navigation requests
     const acceptsHtml = req.accepts(['html', 'json']) === 'html';
     if (!acceptsHtml) return next();
 
-    return isAuthenticated(req, res, () =>
-      isTradesperson(req, res, () => {
-        const indexFile = path.join(portalDist, 'index.html');
-        if (fs.existsSync(indexFile)) {
-          res.sendFile(indexFile);
-        } else {
-          next();
-        }
-      })
-    );
+    const indexFile = path.join(portalDist, 'index.html');
+    if (fs.existsSync(indexFile)) {
+      res.sendFile(indexFile);
+    } else {
+      next();
+    }
   });
 
   console.log('✓ Tradesperson web portal mounted at /portal');

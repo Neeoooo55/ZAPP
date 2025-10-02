@@ -9,6 +9,7 @@ import {
   Alert,
   Modal,
   TextInput,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -295,6 +296,20 @@ const TradespersonDashboardScreen = ({ navigation }) => {
     );
   };
 
+  const handleOpenWebPortal = async () => {
+    const portalUrl = 'http://localhost:3000/portal';
+    try {
+      const supported = await Linking.canOpenURL(portalUrl);
+      if (supported) {
+        await Linking.openURL(portalUrl);
+      } else {
+        Alert.alert('Error', 'Cannot open web portal. Please check your connection.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open web portal');
+    }
+  };
+
   const renderJobCard = (job) => {
     const canStart = job.status === 'accepted';
     const canComplete = job.status === 'in_progress';
@@ -460,9 +475,15 @@ const TradespersonDashboardScreen = ({ navigation }) => {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>My Jobs</Text>
-          <TouchableOpacity onPress={onRefresh}>
-            <Ionicons name="refresh" size={24} color={colors.primary} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={handleOpenWebPortal} style={styles.webPortalButton}>
+              <Ionicons name="globe-outline" size={20} color={colors.white} />
+              <Text style={styles.webPortalButtonText}>Web Portal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onRefresh}>
+              <Ionicons name="refresh" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Stats */}
@@ -666,6 +687,28 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: colors.text,
+  },
+
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  webPortalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+
+  webPortalButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
   },
   
   stats: {
