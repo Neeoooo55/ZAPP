@@ -3,12 +3,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const tradespersonRoutes = require('./routes/tradespeople');
 const customerRoutes = require('./routes/customers');
+const { isAuthenticated, isTradesperson } = require('./middleware/auth');
 
 const app = express();
 
@@ -49,6 +52,35 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/tradespeople', tradespersonRoutes);
 app.use('/api/customers', customerRoutes);
 
+// Serve Tradesperson Cooperative Web Portal (Vite build) at /portal if present
+const portalDist = path.join(__dirname, '..', 'web-portal', 'dist');
+if (fs.existsSync(portalDist)) {
+  // Static assets (JS/CSS/images)
+  app.use('/portal', express.static(portalDist, { maxAge: '7d', index: false }));
+
+  // HTML entry – gate to authenticated tradespeople only
+  app.get(['/portal', '/portal/*'], (req, res, next) => {
+    // Only intercept HTML navigation requests
+    const acceptsHtml = req.accepts(['html', 'json']) === 'html';
+    if (!acceptsHtml) return next();
+
+    return isAuthenticated(req, res, () =>
+      isTradesperson(req, res, () => {
+        const indexFile = path.join(portalDist, 'index.html');
+        if (fs.existsSync(indexFile)) {
+          res.sendFile(indexFile);
+        } else {
+          next();
+        }
+      })
+    );
+  });
+
+  console.log('✓ Tradesperson web portal mounted at /portal');
+} else {
+  console.log('ℹ Tradesperson web portal not built (missing web-portal/dist).');
+}
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'ZAPP Backend is running' });
@@ -67,4 +99,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✓ Server running on port ${PORT}`);
 });
-

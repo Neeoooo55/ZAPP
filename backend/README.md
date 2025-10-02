@@ -57,6 +57,31 @@ npm start
 
 The server will start on `http://localhost:3000` (or the port specified in `.env`).
 
+## Tradesperson Web Portal (/portal)
+
+This repo includes a separate Vite-powered web portal for tradespeople (co-op dashboard). The backend serves the built portal at `/portal` and restricts access to authenticated users with the `tradesperson` role.
+
+Build steps:
+
+1. Install portal dependencies:
+   ```bash
+   cd ../web-portal
+   npm install
+   npm run build
+   ```
+
+2. Start the backend (from `backend/`):
+   ```bash
+   npm start
+   ```
+
+3. Visit `http://localhost:3000/portal` in your browser.
+
+Notes:
+- The backend only mounts the portal if `web-portal/dist` exists.
+- Static assets are served from the built folder, while HTML navigation to `/portal` and `/portal/*` requires an authenticated session with role `tradesperson`.
+- The portal UI currently uses mock data; you can progressively wire it to existing `/api/tradespeople/*` endpoints.
+
 ## API Endpoints
 
 ### Authentication
@@ -139,4 +164,3 @@ Update the API_BASE_URL in the mobile app (`src/services/api.js`):
 Find your computer's IP:
 - macOS/Linux: `ifconfig | grep "inet "`
 - Windows: `ipconfig`
-

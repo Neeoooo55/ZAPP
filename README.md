@@ -43,6 +43,11 @@ A full-stack mobile application for connecting customers with trusted local trad
 - **Password Security**: bcryptjs
 - **Session Store**: MongoDB (connect-mongo)
 
+### Web Portal (Tradesperson Co-op)
+- **Framework**: React + Vite (in `web-portal/`)
+- **Served At**: `http://localhost:3000/portal` once built
+- **Access**: Requires authenticated `tradesperson` session
+
 ## 📦 Quick Start
 
 ### Prerequisites
@@ -89,6 +94,18 @@ A full-stack mobile application for connecting customers with trusted local trad
 
 See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed step-by-step instructions.
 
+### Build the Web Portal (optional)
+
+To enable the tradesperson cooperative web portal at `/portal`:
+
+```bash
+cd web-portal
+npm install
+npm run build
+```
+
+Then start the backend (`cd backend && npm start`) and visit `http://localhost:3000/portal`.
+
 ## 🏗 Project Structure
 
 ```
@@ -107,6 +124,12 @@ ZAPP/
 │   │   └── auth.js          # Auth middleware
 │   ├── package.json
 │   └── .env                 # Environment variables
+│
+├── web-portal/               # Tradesperson cooperative web portal (Vite project)
+│   ├── package.json         # Portal dependencies and scripts
+│   ├── index.html           # SPA entry
+│   ├── App.tsx              # Portal app
+│   └── (dist/)              # Build output (created by `npm run build`)
 │
 ├── src/                      # Mobile app source
 │   ├── components/          # Reusable UI components
