@@ -56,19 +56,32 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   const activeJobs = jobs.filter((j) =>
-    ['pending', 'assigned', 'in_progress'].includes(j.status)
+    ['pending', 'accepted', 'assigned', 'in_progress'].includes(j.status)
   );
   const completedJobs = jobs.filter((j) => j.status === 'completed');
 
   const getStatusColor = (status) => {
     const colors_map = {
       pending: colors.warning,
+      accepted: colors.info,
       assigned: colors.info,
       in_progress: colors.primary,
       completed: colors.success,
       cancelled: colors.error,
     };
     return colors_map[status] || colors.textMuted;
+  };
+
+  const getStatusText = (status) => {
+    const statusMap = {
+      pending: 'PENDING',
+      accepted: 'ACCEPTED',
+      assigned: 'ASSIGNED',
+      in_progress: 'JOB STARTED',
+      completed: 'COMPLETED',
+      cancelled: 'CANCELLED',
+    };
+    return statusMap[status] || status.replace('_', ' ').toUpperCase();
   };
 
   const getTradeIcon = (trade) => {
@@ -156,7 +169,7 @@ const DashboardScreen = ({ navigation }) => {
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(job.status) }]}>
           <Text style={styles.statusText}>
-            {job.status.replace('_', ' ').toUpperCase()}
+            {getStatusText(job.status)}
           </Text>
         </View>
       </View>
@@ -279,6 +292,25 @@ const DashboardScreen = ({ navigation }) => {
           {job.review.comment && (
             <Text style={styles.reviewComment}>{job.review.comment}</Text>
           )}
+        </View>
+      )}
+
+      {/* Status-specific info */}
+      {job.status === 'accepted' && (
+        <View style={styles.statusInfo}>
+          <Ionicons name="checkmark-circle" size={20} color={colors.info} />
+          <Text style={styles.statusInfoText}>
+            Tradesperson has accepted your job request
+          </Text>
+        </View>
+      )}
+
+      {job.status === 'in_progress' && (
+        <View style={styles.statusInfo}>
+          <Ionicons name="hammer" size={20} color={colors.primary} />
+          <Text style={styles.statusInfoText}>
+            Work is in progress
+          </Text>
         </View>
       )}
 
@@ -584,6 +616,26 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.success,
     fontWeight: '600',
+  },
+
+  statusInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 12,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderLight,
+    backgroundColor: colors.info + '10',
+    padding: 12,
+    borderRadius: 8,
+  },
+
+  statusInfoText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.text,
+    fontWeight: '500',
   },
   
   cancelButton: {
