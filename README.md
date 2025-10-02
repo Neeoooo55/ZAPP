@@ -347,4 +347,3 @@ For issues and questions:
 ---
 
 **Built with ❤️ using Expo and React Native**
-
