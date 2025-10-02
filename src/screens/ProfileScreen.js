@@ -164,6 +164,77 @@ const ProfileScreen = ({ navigation }) => {
           </View>
         </Card>
 
+        {/* Ratings & Performance - Tradesperson Only */}
+        {user?.role === 'tradesperson' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ratings & Performance</Text>
+            <Card>
+              <View style={styles.ratingsContainer}>
+                {/* Average Rating */}
+                <View style={styles.ratingItem}>
+                  <View style={styles.ratingIconContainer}>
+                    <Ionicons name="star" size={32} color={colors.warning} />
+                  </View>
+                  <View style={styles.ratingInfo}>
+                    <Text style={styles.ratingValue}>
+                      {(user?.rating?.average || 5.0).toFixed(1)}
+                    </Text>
+                    <Text style={styles.ratingLabel}>Average Rating</Text>
+                    <Text style={styles.ratingSubtext}>
+                      {user?.rating?.totalReviews || 0} reviews
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Completed Jobs */}
+                <View style={styles.ratingItem}>
+                  <View style={styles.ratingIconContainer}>
+                    <Ionicons name="checkmark-circle" size={32} color={colors.success} />
+                  </View>
+                  <View style={styles.ratingInfo}>
+                    <Text style={styles.ratingValue}>
+                      {user?.completedJobs || 0}
+                    </Text>
+                    <Text style={styles.ratingLabel}>Completed Jobs</Text>
+                    <Text style={styles.ratingSubtext}>Total completed</Text>
+                  </View>
+                </View>
+
+                {/* Response Time */}
+                <View style={styles.ratingItem}>
+                  <View style={styles.ratingIconContainer}>
+                    <Ionicons name="time" size={32} color={colors.info} />
+                  </View>
+                  <View style={styles.ratingInfo}>
+                    <Text style={styles.ratingValue}>
+                      {user?.responseTime || 'Fast'}
+                    </Text>
+                    <Text style={styles.ratingLabel}>Response Time</Text>
+                    <Text style={styles.ratingSubtext}>Typical response</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Star Breakdown */}
+              {user?.rating?.totalReviews > 0 && (
+                <View style={styles.starBreakdown}>
+                  <Text style={styles.starBreakdownTitle}>Rating Breakdown</Text>
+                  <View style={styles.starRow}>
+                    <Ionicons name="star" size={16} color={colors.warning} />
+                    <Ionicons name="star" size={16} color={colors.warning} />
+                    <Ionicons name="star" size={16} color={colors.warning} />
+                    <Ionicons name="star" size={16} color={colors.warning} />
+                    <Ionicons name="star" size={16} color={colors.warning} />
+                    <Text style={styles.starText}>
+                      {((user.rating.average / 5) * 100).toFixed(0)}%
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </Card>
+          </View>
+        )}
+
         {/* Personal Information */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personal Information</Text>
@@ -482,6 +553,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.error,
+  },
+  
+  // Ratings styles
+  ratingsContainer: {
+    gap: 16,
+  },
+  
+  ratingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  
+  ratingIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.backgroundGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  
+  ratingInfo: {
+    flex: 1,
+  },
+  
+  ratingValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  
+  ratingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  
+  ratingSubtext: {
+    fontSize: 12,
+    color: colors.textLight,
+  },
+  
+  starBreakdown: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderLight,
+  },
+  
+  starBreakdownTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  
+  starText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginLeft: 8,
   },
 });
 
