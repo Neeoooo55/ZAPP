@@ -1,17 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SupportTicket, TicketStatus, Dispute } from '../types';
-
-const mockTickets: SupportTicket[] = [
-    { id: 'TKT-001', subject: 'Late Arrival', user: 'Steve Rogers', priority: 'Medium', status: TicketStatus.Open, lastUpdate: '2023-11-20 09:10 AM' },
-    { id: 'TKT-002', subject: 'Payment Issue', user: 'Tony Stark', priority: 'High', status: TicketStatus.InProgress, lastUpdate: '2023-11-20 08:30 AM' },
-    { id: 'TKT-003', subject: 'Question about service', user: 'Clint Barton', priority: 'Low', status: TicketStatus.Resolved, lastUpdate: '2023-11-19 05:00 PM' },
-    { id: 'TKT-004', subject: 'App Bug Report', user: 'Natasha Romanoff', priority: 'Medium', status: TicketStatus.Open, lastUpdate: '2023-11-20 09:12 AM' },
-];
-
-const mockDisputes: Dispute[] = [
-    { id: 'DIS-001', jobId: 'J8341', customer: 'Wanda Maximoff', tradesperson: 'Bruce Banner', reason: 'Unsatisfactory Work', status: 'Under Review', openedDate: '2023-11-19' },
-    { id: 'DIS-002', jobId: 'J8330', customer: 'Sam Wilson', tradesperson: 'Bucky Barnes', reason: 'Property Damage Claim', status: 'Open', openedDate: '2023-11-20' },
-];
+import { api } from '../api';
 
 const getTicketStatusBadge = (status: TicketStatus) => {
     switch (status) {
@@ -25,6 +14,28 @@ const getTicketStatusBadge = (status: TicketStatus) => {
 const Support: React.FC = () => {
     const [activeTab, setActiveTab] = useState('tickets');
     
+    const [loading, setLoading] = useState(true);
+    const [tickets, setTickets] = useState<any[]>([]);
+    const [disputes, setDisputes] = useState<any[]>([]);
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const [t, d] = await Promise.all([api.tickets(), api.disputes()]);
+                if (!mounted) return;
+                setTickets(t.tickets || []);
+                setDisputes(d.disputes || []);
+            } catch (e) {
+                setTickets([]);
+                setDisputes([]);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
+
     return (
         <div>
             <h1 className="text-3xl font-bold text-brand-gray-900">Support & Disputes</h1>
@@ -54,17 +65,23 @@ const Support: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-gray-200">
-                                {mockTickets.map(ticket => (
-                                    <tr key={ticket.id}>
-                                        <td className="py-3 px-4 text-sm font-medium text-brand-gray-900">{ticket.id}</td>
+                                {loading ? (
+                                  <tr><td className="py-6 px-4 text-brand-gray-600" colSpan={7}>Loading…</td></tr>
+                                ) : tickets.length === 0 ? (
+                                  <tr><td className="py-6 px-4 text-brand-gray-600" colSpan={7}>No tickets yet.</td></tr>
+                                ) : (
+                                  tickets.map((ticket: any) => (
+                                    <tr key={ticket._id}>
+                                        <td className="py-3 px-4 text-sm font-medium text-brand-gray-900">{ticket._id}</td>
                                         <td className="py-3 px-4 text-sm text-brand-gray-700">{ticket.subject}</td>
-                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{ticket.user}</td>
+                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{`${ticket.user?.firstName || ''} ${ticket.user?.lastName || ''}`.trim() || ticket.user?.email}</td>
                                         <td className="py-3 px-4"><span className={`font-semibold ${ticket.priority === 'High' ? 'text-red-600' : ticket.priority === 'Medium' ? 'text-yellow-600' : 'text-green-600'}`}>{ticket.priority}</span></td>
-                                        <td className="py-3 px-4"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTicketStatusBadge(ticket.status)}`}>{ticket.status}</span></td>
-                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{ticket.lastUpdate}</td>
+                                        <td className="py-3 px-4"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTicketStatusBadge(ticket.status as TicketStatus)}`}>{ticket.status}</span></td>
+                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{ticket.lastUpdate ? new Date(ticket.lastUpdate).toLocaleString() : ''}</td>
                                         <td className="py-3 px-4 text-sm font-medium"><a href="#" className="text-brand-blue hover:text-indigo-900">View</a></td>
                                     </tr>
-                                ))}
+                                  ))
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -82,16 +99,22 @@ const Support: React.FC = () => {
                                 </tr>
                             </thead>
                              <tbody className="divide-y divide-brand-gray-200">
-                                {mockDisputes.map(d => (
-                                    <tr key={d.id}>
-                                        <td className="py-3 px-4 text-sm font-medium text-brand-gray-900">{d.id}</td>
-                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{d.jobId}</td>
-                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{d.customer} vs {d.tradesperson}</td>
+                                {loading ? (
+                                  <tr><td className="py-6 px-4 text-brand-gray-600" colSpan={6}>Loading…</td></tr>
+                                ) : disputes.length === 0 ? (
+                                  <tr><td className="py-6 px-4 text-brand-gray-600" colSpan={6}>No disputes yet.</td></tr>
+                                ) : (
+                                  disputes.map((d: any) => (
+                                    <tr key={d._id}>
+                                        <td className="py-3 px-4 text-sm font-medium text-brand-gray-900">{d._id}</td>
+                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{d.jobId?._id || ''}</td>
+                                        <td className="py-3 px-4 text-sm text-brand-gray-700">{`${d.customer?.firstName || ''} ${d.customer?.lastName || ''}`.trim()} vs {`${d.tradesperson?.firstName || ''} ${d.tradesperson?.lastName || ''}`.trim()}</td>
                                         <td className="py-3 px-4 text-sm text-brand-gray-700">{d.reason}</td>
                                         <td className="py-3 px-4"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${d.status === 'Open' ? 'bg-red-100 text-red-800' : d.status === 'Under Review' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{d.status}</span></td>
                                         <td className="py-3 px-4 text-sm font-medium"><a href="#" className="text-brand-blue hover:text-indigo-900">Mediate</a></td>
                                     </tr>
-                                ))}
+                                  ))
+                                )}
                             </tbody>
                         </table>
                     </div>

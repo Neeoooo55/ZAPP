@@ -1,25 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
-
-const userGrowthData = [
-  { name: 'Jan', Customers: 40, Tradespeople: 24 },
-  { name: 'Feb', Customers: 30, Tradespeople: 13 },
-  { name: 'Mar', Customers: 45, Tradespeople: 38 },
-  { name: 'Apr', Customers: 50, Tradespeople: 39 },
-  { name: 'May', Customers: 60, Tradespeople: 48 },
-  { name: 'Jun', Customers: 70, Tradespeople: 52 },
-];
-
-const revenueData = [
-    { name: 'Plumbing', Revenue: 4000 },
-    { name: 'Electrical', Revenue: 3000 },
-    { name: 'Carpentry', Revenue: 2000 },
-    // FIX: Corrected a typo in the object key.
-    { name: 'Handyman', Revenue: 2780 },
-    { name: 'Painting', Revenue: 1890 },
-];
+import { api } from '../api';
 
 const Analytics: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [usersData, setUsersData] = useState<{ name: string; Customers: number; Tradespeople: number; }[]>([]);
+  const [jobsByStatus, setJobsByStatus] = useState<{ name: string; Count: number; }[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await api.overview();
+        if (!mounted) return;
+        const users = res.overview?.users || {};
+        // Build a simple two-point time series using current totals
+        setUsersData([
+          { name: 'Current', Customers: users.customers ?? 0, Tradespeople: users.tradespeople ?? 0 }
+        ]);
+        const byStatus = res.overview?.jobs?.byStatus || {};
+        setJobsByStatus(Object.keys(byStatus).map((k) => ({ name: k, Count: byStatus[k] || 0 })));
+      } catch (e) {
+        setUsersData([]);
+        setJobsByStatus([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-brand-gray-900">Analytics & Reporting</h1>
@@ -59,7 +69,7 @@ const Analytics: React.FC = () => {
             <h3 className="text-lg font-semibold text-brand-gray-800">User Growth (YTD)</h3>
             <div className="w-full h-72 mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={userGrowthData}>
+                    <LineChart data={usersData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
@@ -72,16 +82,16 @@ const Analytics: React.FC = () => {
             </div>
         </div>
         <div className="bg-white p-5 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold text-brand-gray-800">Revenue by Trade (This Month)</h3>
+            <h3 className="text-lg font-semibold text-brand-gray-800">Jobs by Status</h3>
              <div className="w-full h-72 mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenueData}>
+                    <BarChart data={jobsByStatus}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="Revenue" fill="#1a73e8" />
+                        <Bar dataKey="Count" fill="#1a73e8" />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

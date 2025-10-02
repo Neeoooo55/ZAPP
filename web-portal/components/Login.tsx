@@ -24,7 +24,7 @@ const Login: React.FC<{ onSuccess: () => void; onSignUp: () => void }> = ({ onSu
   return (
     <div className="flex items-center justify-center h-screen bg-coop-gray-light">
       <form onSubmit={submit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-coop-gray-darker mb-6">Tradesperson Login</h1>
+        <h1 className="text-2xl font-bold text-coop-gray-darker mb-6">Sign In</h1>
         <label className="block text-sm font-medium text-coop-gray-dark">Email</label>
         <input
           type="email"
@@ -56,11 +56,10 @@ const Login: React.FC<{ onSuccess: () => void; onSignUp: () => void }> = ({ onSu
         >
           New to the cooperative? Sign Up
         </button>
-        <p className="text-xs text-coop-gray-dark mt-3 text-center">Use your ZAPP tradesperson credentials.</p>
+        <p className="text-xs text-coop-gray-dark mt-3 text-center">Use your ZAPP credentials.</p>
       </form>
     </div>
   );
 };
 
 export default Login;
-

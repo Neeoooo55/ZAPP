@@ -1,6 +1,6 @@
 import React from 'react';
 import Icon from './shared/Icon';
-import type { View } from '../App';
+import type { View } from './AdminShell';
 
 interface SidebarProps {
   currentView: View;
@@ -40,13 +40,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
     { icon: 'finance', label: 'Finance' },
     { icon: 'support', label: 'Support' },
     { icon: 'analytics', label: 'Analytics' },
+    { icon: 'users', label: 'Profile' },
   ];
 
   return (
     <aside className="w-64 flex-shrink-0 bg-brand-gray-900 text-white flex flex-col">
       <div className="h-16 flex items-center justify-center border-b border-brand-gray-800 flex-shrink-0 px-4">
         <Icon name="logo" className="w-8 h-8 text-brand-blue" />
-        <h1 className="text-xl font-bold ml-2 tracking-tight">TradePlatform</h1>
+        <h1 className="text-xl font-bold ml-2 tracking-tight">ZAPP Admin Dashboard</h1>
       </div>
       <nav className="flex-1 px-4 py-4">
         <ul>

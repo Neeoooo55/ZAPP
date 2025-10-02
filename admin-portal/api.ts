@@ -16,6 +16,13 @@ export const api = {
     }).then(json),
   logout: () => fetch(`${base}/auth/logout`, { method: 'POST', credentials: 'include' }).then(json),
   me: () => fetch(`${base}/auth/me`, { credentials: 'include' }).then(json),
+  updateMe: (updates: Record<string, unknown>) =>
+    fetch(`${base}/auth/me`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    }).then(json),
 
   // Admin APIs
   overview: () => fetch(`${base}/admin/overview`, { credentials: 'include' }).then(json),
@@ -26,7 +33,14 @@ export const api = {
   jobs: (status?: string) => {
     const q = status ? `?status=${encodeURIComponent(status)}` : '';
     return fetch(`${base}/admin/jobs${q}`, { credentials: 'include' }).then(json);
-  }
+  },
+  tickets: () => fetch(`${base}/admin/support/tickets`, { credentials: 'include' }).then(json),
+  disputes: () => fetch(`${base}/admin/support/disputes`, { credentials: 'include' }).then(json),
+  transactions: (type?: 'Payment' | 'Payout' | 'Refund') => {
+    const q = type ? `?type=${encodeURIComponent(type)}` : '';
+    return fetch(`${base}/admin/finance/transactions${q}`, { credentials: 'include' }).then(json);
+  },
+  promoCodes: () => fetch(`${base}/admin/finance/promocodes`, { credentials: 'include' }).then(json)
 };
 
 export type BackendUser = {

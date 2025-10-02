@@ -96,4 +96,60 @@ router.get('/jobs', async (req, res) => {
   }
 });
 
+// ---- Support/Tickets ----
+const Ticket = require('../models/Ticket');
+const Dispute = require('../models/Dispute');
+router.get('/support/tickets', async (req, res) => {
+  try {
+    const tickets = await Ticket.find({})
+      .populate('user', 'firstName lastName email')
+      .sort({ lastUpdate: -1 })
+      .lean();
+    res.json({ success: true, tickets });
+  } catch (e) {
+    console.error('Admin tickets list error:', e);
+    res.status(500).json({ success: false, message: 'Failed to load tickets' });
+  }
+});
+
+router.get('/support/disputes', async (req, res) => {
+  try {
+    const disputes = await Dispute.find({})
+      .populate('jobId', '_id')
+      .populate('customer', 'firstName lastName email')
+      .populate('tradesperson', 'firstName lastName email')
+      .sort({ lastUpdate: -1 })
+      .lean();
+    res.json({ success: true, disputes });
+  } catch (e) {
+    console.error('Admin disputes list error:', e);
+    res.status(500).json({ success: false, message: 'Failed to load disputes' });
+  }
+});
+
+// ---- Finance ----
+const Transaction = require('../models/Transaction');
+const PromoCode = require('../models/PromoCode');
+router.get('/finance/transactions', async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.type) filter.type = req.query.type;
+    const transactions = await Transaction.find(filter).sort({ date: -1 }).lean();
+    res.json({ success: true, transactions });
+  } catch (e) {
+    console.error('Admin transactions list error:', e);
+    res.status(500).json({ success: false, message: 'Failed to load transactions' });
+  }
+});
+
+router.get('/finance/promocodes', async (req, res) => {
+  try {
+    const codes = await PromoCode.find({}).sort({ createdAt: -1 }).lean();
+    res.json({ success: true, codes });
+  } catch (e) {
+    console.error('Admin promo codes list error:', e);
+    res.status(500).json({ success: false, message: 'Failed to load promo codes' });
+  }
+});
+
 module.exports = router;

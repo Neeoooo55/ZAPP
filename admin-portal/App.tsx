@@ -52,7 +52,21 @@ const App: React.FC = () => {
     );
   }
 
-  return <AdminShell />;
+  const onLogout = async () => {
+    await api.logout();
+    await refreshAuth();
+  };
+
+  const refreshUser = async () => {
+    try {
+      const me = await api.me();
+      setUser(me.user as BackendUser);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  return <AdminShell user={user!} onLogout={onLogout} onUserUpdated={refreshUser} />;
 };
 
 export default App;

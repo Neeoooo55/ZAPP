@@ -113,6 +113,14 @@ const App: React.FC = () => {
     return <Login onSuccess={refreshAuth} onSignUp={() => setShowRegister(true)} />;
   }
 
+  // Redirect admins who log in via the web portal to the admin dashboard
+  if (role === 'admin') {
+    if (typeof window !== 'undefined') {
+      window.location.assign('/admin');
+    }
+    return <div className="flex items-center justify-center h-screen text-coop-gray-darker">Redirecting to admin…</div>;
+  }
+
   if (role !== 'tradesperson') {
     return (
       <div className="flex items-center justify-center h-screen">

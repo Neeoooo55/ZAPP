@@ -1,18 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Transaction, TransactionType, PromoCode } from '../types';
-
-const mockTransactions: Transaction[] = [
-    { id: 'T001', date: '2023-11-20', type: TransactionType.Payment, amount: 150.00, from: 'Steve Rogers', to: 'Platform', status: 'Completed' },
-    { id: 'T002', date: '2023-11-20', type: TransactionType.Payout, amount: 120.00, from: 'Platform', to: 'Tony Stark', status: 'Pending' },
-    { id: 'T003', date: '2023-11-19', type: TransactionType.Refund, amount: 75.00, from: 'Platform', to: 'Wanda Maximoff', status: 'Completed' },
-    { id: 'T004', date: '2023-11-19', type: TransactionType.Payment, amount: 250.00, from: 'Clint Barton', to: 'Platform', status: 'Failed' },
-];
-
-const mockPromoCodes: PromoCode[] = [
-    { id: 'P001', code: 'NEWBIE10', discount: '10% Off', status: 'Active', usageCount: 152, limit: 1000 },
-    { id: 'P002', code: 'REFERAFRIEND', discount: '$20 Off', status: 'Active', usageCount: 88, limit: 500 },
-    { id: 'P003', code: 'HOLIDAY23', discount: '15% Off', status: 'Expired', usageCount: 200, limit: 200 },
-];
+import { api } from '../api';
 
 const TransactionTable: React.FC<{ transactions: Transaction[] }> = ({ transactions }) => (
     <div className="overflow-x-auto">
@@ -73,18 +61,75 @@ const PromoCodeTable: React.FC<{ codes: PromoCode[] }> = ({ codes }) => (
 
 const FinancialManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState('transactions');
+    const [loading, setLoading] = useState(true);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [codes, setCodes] = useState<PromoCode[]>([]);
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const [txnRes, codeRes] = await Promise.all([
+                    api.transactions(),
+                    api.promoCodes()
+                ]);
+                if (!mounted) return;
+                const mappedTx: Transaction[] = (txnRes.transactions || []).map((t: any) => ({
+                    id: t._id,
+                    date: (t.date ? String(t.date).slice(0,10) : ''),
+                    type: (t.type as TransactionType),
+                    amount: Number(t.amount) || 0,
+                    from: t.from,
+                    to: t.to,
+                    status: t.status,
+                }));
+                const mappedCodes: PromoCode[] = (codeRes.codes || []).map((c: any) => ({
+                    id: c._id,
+                    code: c.code,
+                    discount: c.discount,
+                    status: c.status,
+                    usageCount: c.usageCount || 0,
+                    limit: c.limit || 0,
+                }));
+                setTransactions(mappedTx);
+                setCodes(mappedCodes);
+            } catch (e) {
+                setTransactions([]);
+                setCodes([]);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
     const TABS = ['transactions', 'payouts', 'subscriptions', 'promo codes'];
     
     const renderContent = () => {
         switch (activeTab) {
             case 'transactions':
-                return <TransactionTable transactions={mockTransactions} />;
+                return loading ? (
+                    <div className="p-8 text-center text-brand-gray-500">Loading transactions…</div>
+                ) : transactions.length === 0 ? (
+                    <div className="p-8 text-center text-brand-gray-500">No transactions yet.</div>
+                ) : (
+                    <TransactionTable transactions={transactions} />
+                );
             case 'payouts':
-                return <TransactionTable transactions={mockTransactions.filter(t => t.type === TransactionType.Payout)} />;
+                return loading ? (
+                    <div className="p-8 text-center text-brand-gray-500">Loading payouts…</div>
+                ) : (
+                    <TransactionTable transactions={transactions.filter(t => t.type === TransactionType.Payout)} />
+                );
             case 'subscriptions':
                 return <div className="p-8 text-center text-brand-gray-500">Subscription Management Coming Soon.</div>;
             case 'promo codes':
-                return <PromoCodeTable codes={mockPromoCodes} />;
+                return loading ? (
+                    <div className="p-8 text-center text-brand-gray-500">Loading promo codes…</div>
+                ) : codes.length === 0 ? (
+                    <div className="p-8 text-center text-brand-gray-500">No promo codes configured.</div>
+                ) : (
+                    <PromoCodeTable codes={codes} />
+                );
             default: return null;
         }
     }

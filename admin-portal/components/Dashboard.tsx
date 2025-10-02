@@ -33,7 +33,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value, change, changeType, ico
 
 
 const AlertItem: React.FC<{ title: string; time: string; details: string; level: 'critical' | 'warning' }> = ({ title, time, details, level }) => (
-    <div className="flex items-start space-x-4 py-3">
+          <div className="flex items-start space-x-4 py-3">
         <div className={`mt-1 flex-shrink-0 p-1.5 rounded-full ${level === 'critical' ? 'bg-red-100' : 'bg-yellow-100'}`}>
             <Icon name="alert" className={`w-5 h-5 ${level === 'critical' ? 'text-red-600' : 'text-yellow-600'}`} />
         </div>
@@ -103,11 +103,6 @@ const Dashboard: React.FC = () => {
         <div>
           <h2 className="text-xl font-semibold text-brand-gray-800">Critical Alerts</h2>
           <div className="bg-white p-4 rounded-xl shadow-sm mt-4 h-96 overflow-y-auto divide-y divide-brand-gray-200">
-            <AlertItem level="critical" title="SLA Breach" time="2m ago" details="Job #J8345 exceeded 30-min acceptance time." />
-            <AlertItem level="critical" title="Payment Failure" time="15m ago" details="Payout of $250 to T. Stark failed." />
-            <AlertItem level="warning" title="Flagged Dispute" time="30m ago" details="New dispute opened for Job #J8341." />
-            <AlertItem level="warning" title="Stalled Job" time="45m ago" details="Job #J8339 has been 'In Progress' for 4+ hours." />
-             <AlertItem level="critical" title="SLA Breach" time="1h ago" details="Job #J8335 exceeded 30-min acceptance time." />
           </div>
         </div>
       </div>

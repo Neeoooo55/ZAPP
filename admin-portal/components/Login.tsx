@@ -56,4 +56,3 @@ const Login: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
 };
 
 export default Login;
-
